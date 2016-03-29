@@ -54,15 +54,14 @@ function calcOverlap(blockA, blockB) {
     return (minCommonRight - maxCommonLeft) / minWidth;
 }
 
-angular.module('dragcolumns', ['ng']).run(function () {
-    console.log('dragcolumns run');
-}).directive('dragcolumns', function () {
+angular.module('dragcolumns', []).directive('dragcolumns', function () {
 
     return {
         restrict: 'A',
         priority: 100,
         scope: {
-            order: '=dragcolumns'
+            order: '=dragcolumns',
+            callback: '&dragcolumnsCallback'
         },
         controller: function ($scope) {
 
@@ -134,36 +133,34 @@ angular.module('dragcolumns', ['ng']).run(function () {
                 }.bind(this));
             };
 
-            var $$columns = [];
-            this.addDragColumn = function (el) {
+            var $$columns = {};
+            this.addDragColumn = function (key, el) {
                 var elem = angular.element(el)[0];
-                if ($$columns.indexOf(elem) == -1) {
-                    $$columns.push(elem);
+                if ($$columns[key]) {
+                    throw new Error('key ' + key + ' is already used');
                 }
+                $$columns[key] = elem;
             };
-            this.removeDragColumn = function (el) {
-                var elem = angular.element(el)[0];
-                var idx = $$columns.indexOf(elem);
-                if (idx === -1) return $$columns;
-
-                $$columns.splice(idx, 1);
+            this.removeDragColumn = function (key) {
+                delete $$columns[key];
                 return $$columns;
             };
 
             // Dragging
 
             var $$drag = {
-                el: null,
+                key: null,
                 shiftX: null,
                 shiftY: null,
                 cells: null
             };
 
             this.isDragging = function () {
-                return !!$$drag.el;
+                return !!$$drag.key;
             };
-            this.startDragging = function (column, e) {
+            this.startDragging = function (key, e) {
 
+                var column = angular.element($$columns[key]);
                 var columnIndex = indexOfElement(column, column.parent().children());
                 var columnCells = $$elements.source[0].querySelectorAll('td:nth-child(' + (columnIndex + 1) + '), th:nth-child(' + (columnIndex + 1) + ')');
 
@@ -173,7 +170,7 @@ angular.module('dragcolumns', ['ng']).run(function () {
                 var $this = angular.element(column);
                 var coords = getCoords($this[0]);
 
-                $$drag.el = $this;
+                $$drag.key = key;
                 $$drag.shiftX = e.pageX - coords.left;
                 $$drag.shiftY = e.pageY - coords.top;
                 $$drag.cells = angular.element(columnCells).addClass('dragcolumns-cell');
@@ -192,11 +189,10 @@ angular.module('dragcolumns', ['ng']).run(function () {
                     display: 'none'
                 });
 
-                $$drag.el = null;
+                $$drag.key = null;
             };
             this.move = function (e) {
 
-                console.log(console.log('move'));
                 $$elements.table.css({
                     top: e.pageY - $$drag.shiftY + 'px',
                     left: e.pageX - $$drag.shiftX + 'px'
@@ -204,38 +200,54 @@ angular.module('dragcolumns', ['ng']).run(function () {
 
                 var tableBox = $$elements.table[0].getBoundingClientRect();
 
-                var curIdx = indexOfElement($$drag.el, $$columns);
-
-                var headersCoords = [].map.call($$columns, function (item) {
-                    return item.getBoundingClientRect();
-                });
-
-                var maxOverlapIdx = null,
-                    maxOverlap = null;
-
-                var curOverlap = null;
-                headersCoords.map(function (item, i) {
-                    curOverlap = calcOverlap(item, tableBox);
-                    if (curOverlap > maxOverlap) {
-                        maxOverlap = curOverlap;
-                        maxOverlapIdx = i;
+                var headersCoords = Object.keys($$columns).map(function (item) {
+                    return {
+                        key: item,
+                        coords: $$columns[item].getBoundingClientRect()
                     }
                 });
 
-                if (maxOverlapIdx !== curIdx) {
-                    this.swap(curIdx, maxOverlapIdx);
+                var maxOverlapKey = null,
+                    maxOverlap = null;
+
+                var curOverlap = null;
+                headersCoords.forEach(function (item) {
+                    curOverlap = calcOverlap(item.coords, tableBox);
+                    if (curOverlap > maxOverlap) {
+                        maxOverlap = curOverlap;
+                        maxOverlapKey = item.key;
+                    }
+                });
+
+                if (maxOverlapKey !== $$drag.key) {
+                    this.swap($$drag.key, maxOverlapKey);
                 }
             };
-            this.swap = function (curIdx, nextIdx) {
+            this.swap = function (curKey, nextKey) {
+                var callback = $scope.callback();
+                var curIdx = $scope.order.indexOf(curKey),
+                    nextIdx = $scope.order.indexOf(nextKey);
+
+                if (typeof callback === 'function') {
+                    callback(curIdx, nextIdx);
+                }
+
                 $scope.order[curIdx] = $scope.order.splice(nextIdx, 1, $scope.order[curIdx])[0];
                 $scope.$apply();
+            };
+
+            this.destroy = function () {
+                $$elements.table.remove();
             }
         },
         link: function (scope, el, attrs, ctrl) {
             ctrl.addTable(el);
+            scope.$on('$destroy', function () {
+                ctrl.destroy();
+            });
         }
     };
-}).directive('dragcolumnsItem', function () {
+}).directive('dragcolumnsItem', function ($log) {
 
     var isTouchDevice = 'ontouchstart' in window;
     var $$events = {
@@ -245,37 +257,42 @@ angular.module('dragcolumns', ['ng']).run(function () {
     };
 
     return {
-        require: '^dragcolumns',
+        require: ['^dragcolumns'],
         scope: {
-            item: '=dragcolumnsItem'
+            key: '=dragcolumnsItem'
         },
-        link: function (scope, el, attrs, ctrl) {
+        link: function (scope, el, attrs, ctrls) {
 
-            ctrl.addDragColumn(el, scope);
+            if (!scope.key) {
+                throw new Error('dragcolumnsItem key is required. add dragcolumns-item="item.key"');
+            }
+
+            var dragCtrl = ctrls[0];
+            dragCtrl.addDragColumn(scope.key, el);
 
             scope.$on('$destroy', function () {
-                ctrl.removeDragColumn(el);
+                dragCtrl.removeDragColumn(scope.key);
             });
 
             var documentEl = angular.element(document);
 
             function handleMouseMove(e) {
-                if (!ctrl.isDragging()) return;
+                if (!dragCtrl.isDragging()) return;
                 e.preventDefault();
-                ctrl.move(e);
+                dragCtrl.move(e);
             }
 
             el.bind($$events.start, function (e) {
 
                 e.preventDefault();
-                ctrl.startDragging(el, e);
+                dragCtrl.startDragging(scope.key, e);
 
-                ctrl.move(e);
+                dragCtrl.move(e);
 
                 documentEl.bind($$events.move, handleMouseMove);
                 documentEl.bind($$events.end, function (e) {
 
-                    ctrl.stopDragging();
+                    dragCtrl.stopDragging();
                     documentEl.unbind($$events.end);
                     documentEl.unbind($$events.move, handleMouseMove);
                 });

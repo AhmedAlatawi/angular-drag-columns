@@ -11,42 +11,32 @@
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="style.css">
     <title>JS Bin</title>
 </head>
 <body ng-app="app" ng-controller="AppController">
 
-<table class="table table-bordered" drag-columns="order">
+<div class="form-inline">
+    <div class="form-group">
+        <input type="text" ng-model="filter.header" class="form-control">
+    </div>
+</div>
+{{table.headers}}
+<table class="table table-bordered" dragcolumns="table.headers">
     <thead>
     <tr>
         <th>Index</th>
-        <th>Name</th>
-        <th>Age</th>
+        <th dragcolumns-item="header" ng-repeat="header in headers = (table.headers | filter: filter.header)">{{header}}</th>
     </tr>
     </thead>
     <tbody>
-    <tr>
-        <td>0</td>
-        <td>John</td>
-        <td>18</td>
+    <tr ng-repeat="row in table.data">
+        <td>{{$index}}</td>
+        <td ng-repeat="header in headers">{{row[header]}}</td>
     </tr>
-    <tr>
-        <td>1</td>
-        <td>Mike</td>
-        <td>21</td>
-    </tr>
-    <tr>
-        <td>2</td>
-        <td>Jessika</td>
-        <td>19</td>
-    </tr>
-    <tr>
-        <td>3</td>
-        <td>Robert</td>
-        <td>20</td>
-    </tr>
-
     </tbody>
 </table>
 <script src="lib.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

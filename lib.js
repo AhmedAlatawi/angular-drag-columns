@@ -42,7 +42,7 @@ function getCoords(elem) {
         left: left
     };
 }
-function calcOverlap(blockA, blockB) {
+function calcOverlap (blockA, blockB) {
     var minWidth = Math.min(blockA.width, blockB.width);
 
     var leftBlock = blockA.left < blockB.left ? blockA : blockB;
@@ -52,6 +52,38 @@ function calcOverlap(blockA, blockB) {
     var minCommonRight = Math.min(leftBlock.right, rightBlock.right);
 
     return (minCommonRight - maxCommonLeft) / minWidth;
+}
+
+function calcDropKoef (dropPlace, handler) {
+
+    var dropPlaceBlock = {
+        left: dropPlace.left,
+        right: dropPlace.right,
+        bottom: dropPlace.bottom,
+        top: dropPlace.top,
+        width: dropPlace.width,
+        height: dropPlace.height
+    };
+
+    if (dropPlace.width > handler.width) {
+        dropPlaceBlock.width = handler.width;
+
+        /**
+         * A = handler
+         * B = dropPlace - block in which place we want to move handler
+         * C = dropPlaceBlock - area in drop place, where handler will be located, when block will be replaced
+         * /-------------------------------
+         * |  C  |                  |  A  |
+         * |-------------------------------
+         * |             B          |
+         */
+        if (dropPlace.left < handler.left) {
+            dropPlaceBlock.right = dropPlaceBlock.left + dropPlaceBlock.width;
+        } else {
+            dropPlaceBlock.left = dropPlaceBlock.right - dropPlaceBlock.width;
+        }
+    }
+    return calcOverlap (dropPlaceBlock, handler);
 }
 
 angular.module('dragcolumns', []).directive('dragcolumns', function () {
@@ -191,8 +223,10 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
 
                 $$drag.key = null;
             };
+
             this.move = function (e) {
 
+                console.log('move', e.pageY, e.pageX, $$drag.shiftY, $$drag.shiftX);
                 $$elements.table.css({
                     top: e.pageY - $$drag.shiftY + 'px',
                     left: e.pageX - $$drag.shiftX + 'px'
@@ -212,7 +246,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
 
                 var curOverlap = null;
                 headersCoords.forEach(function (item) {
-                    curOverlap = calcOverlap(item.coords, tableBox);
+                    curOverlap = calcDropKoef(item.coords, tableBox);
                     if (curOverlap > maxOverlap) {
                         maxOverlap = curOverlap;
                         maxOverlapKey = item.key;
@@ -223,7 +257,9 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                     this.swap($$drag.key, maxOverlapKey);
                 }
             };
+
             this.swap = function (curKey, nextKey) {
+
                 var callback = $scope.callback();
                 var curIdx = $scope.order.indexOf(curKey),
                     nextIdx = $scope.order.indexOf(nextKey);
@@ -276,18 +312,18 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
 
             var documentEl = angular.element(document);
 
-            function handleMouseMove(e) {
+            var handleMouseMove = function (e) {
                 if (!dragCtrl.isDragging()) return;
                 e.preventDefault();
-                dragCtrl.move(e);
-            }
+                dragCtrl.move(e.touches ? e.touches[0]: e);
+            };
 
             el.bind($$events.start, function (e) {
 
                 e.preventDefault();
-                dragCtrl.startDragging(scope.key, e);
+                dragCtrl.startDragging(scope.key, e.touches ? e.touches[0]: e);
 
-                dragCtrl.move(e);
+                dragCtrl.move(e.touches ? e.touches[0]: e);
 
                 documentEl.bind($$events.move, handleMouseMove);
                 documentEl.bind($$events.end, function (e) {

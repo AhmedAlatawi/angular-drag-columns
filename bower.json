@@ -1,0 +1,27 @@
+{
+  "name": "angular-drag-columns",
+  "description": "AngularJS module for draggable table columns",
+  "main": [
+    "src/angular-drag-columns.js",
+    "src/angular-drag-columns.css"
+  ],
+  "authors": [
+    "Alexey Bondarenko"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "angular",
+    "tables",
+    "columns",
+    "drag'n'drop"
+  ],
+  "homepage": "https://github.com/alexeybondarenko/draggable-table-columns",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

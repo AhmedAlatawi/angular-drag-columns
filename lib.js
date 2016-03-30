@@ -253,7 +253,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                     }
                 });
 
-                if (maxOverlapKey !== $$drag.key) {
+                if (maxOverlap > 0 && maxOverlapKey !== $$drag.key) {
                     this.swap($$drag.key, maxOverlapKey);
                 }
             };

@@ -15,7 +15,7 @@
     "columns",
     "drag'n'drop"
   ],
-  "homepage": "https://github.com/alexeybondarenko/draggable-table-columns",
+  "homepage": "https://github.com/alexeybondarenko/angular-drag-columns",
   "moduleType": [],
   "ignore": [
     "**/.*",

@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alexeybondarenko/draggable-table-columns.git"
+    "url": "git+https://github.com/alexeybondarenko/angular-drag-columns.git"
   },
   "keywords": [
     "angular",
@@ -24,7 +24,7 @@
   "author": "Alexey Bondarenko",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/alexeybondarenko/draggable-table-columns/issues"
+    "url": "https://github.com/alexeybondarenko/angular-drag-columns/issues"
   },
-  "homepage": "https://github.com/alexeybondarenko/draggable-table-columns#readme"
+  "homepage": "https://github.com/alexeybondarenko/angular-drag-columns#readme"
 }

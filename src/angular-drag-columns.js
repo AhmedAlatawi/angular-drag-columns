@@ -229,7 +229,6 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
 
             this.move = function (e) {
 
-                console.log('move', e.pageY, e.pageX, $$drag.shiftY, $$drag.shiftX);
                 $$elements.table.css({
                     top: e.pageY - $$drag.shiftY + 'px',
                     left: e.pageX - $$drag.shiftX + 'px'

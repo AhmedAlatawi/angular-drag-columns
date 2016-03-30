@@ -2,6 +2,25 @@
 
 AngularJS module for draggable table columns. 
 
+## How to install
+
+```
+bower install angular-drag-columns --save
+```
+
+```
+<link rel="stylesheet" href="bower_components/angular-drag-columns/src/angular-drag-columns.css">
+<script src="bower_components/angular-drag-columns/src/angular-drag-columns.js"></script>
+```
+
+Add `dragcolumns` module.
+```
+angular.module('app', [
+    // ...
+    'dragcolumns'
+]);
+```
+
 ## Compatibility
 
 - Descop & Mobile Browsers

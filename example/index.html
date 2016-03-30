@@ -27,13 +27,13 @@
     <thead>
     <tr>
         <th>Index</th>
-        <th dragcolumns-item="header" ng-repeat="header in headers = (table.headers | filter: filter.header)">{{header}}</th>
+        <th dragcolumns-item="header" dragcolumns-item-key="header.key" ng-repeat="header in headers = (table.headers | filter: filter.header)">{{header.key}}</th>
     </tr>
     </thead>
     <tbody>
     <tr ng-repeat="row in table.data">
         <td>{{$index}}</td>
-        <td ng-repeat="header in headers">{{row[header]}}</td>
+        <td ng-repeat="header in headers">{{row[header.key]}}</td>
     </tr>
     </tbody>
 </table>

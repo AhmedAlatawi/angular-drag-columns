@@ -108,7 +108,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
             this.addTable = function (el) {
                 var table = angular.element('<table></table>');
 
-                table[0].className = el[0].className;
+                table.addClass(el[0].className);
                 table.addClass('dragcolumns-table');
 
                 table.css({
@@ -166,12 +166,15 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
             };
 
             var $$columns = {};
-            this.addDragColumn = function (key, el) {
+            this.addDragColumn = function (key, el, item) {
                 var elem = angular.element(el)[0];
                 if ($$columns[key]) {
                     throw new Error('key ' + key + ' is already used');
                 }
-                $$columns[key] = elem;
+                $$columns[key] = {
+                    el: elem,
+                    item: item
+                };
             };
             this.removeDragColumn = function (key) {
                 delete $$columns[key];
@@ -192,7 +195,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
             };
             this.startDragging = function (key, e) {
 
-                var column = angular.element($$columns[key]);
+                var column = angular.element($$columns[key].el);
                 var columnIndex = indexOfElement(column, column.parent().children());
                 var columnCells = $$elements.source[0].querySelectorAll('td:nth-child(' + (columnIndex + 1) + '), th:nth-child(' + (columnIndex + 1) + ')');
 
@@ -237,7 +240,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                 var headersCoords = Object.keys($$columns).map(function (item) {
                     return {
                         key: item,
-                        coords: $$columns[item].getBoundingClientRect()
+                        coords: $$columns[item].el.getBoundingClientRect()
                     }
                 });
 
@@ -261,8 +264,8 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
             this.swap = function (curKey, nextKey) {
 
                 var callback = $scope.callback();
-                var curIdx = $scope.order.indexOf(curKey),
-                    nextIdx = $scope.order.indexOf(nextKey);
+                var curIdx = $scope.order.indexOf($$columns[curKey].item),
+                    nextIdx = $scope.order.indexOf($$columns[nextKey].item);
 
                 if (typeof callback === 'function') {
                     callback(curIdx, nextIdx);
@@ -295,19 +298,25 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
     return {
         require: ['^dragcolumns'],
         scope: {
-            key: '=dragcolumnsItem'
+            item: '=dragcolumnsItem',
+            key: '=dragcolumnsItemKey'
         },
         link: function (scope, el, attrs, ctrls) {
 
-            if (!scope.key) {
+            var key = scope.key;
+            if (!key && typeof scope.item === 'string') {
+                key = scope.item;
+            }
+
+            if (!key) {
                 throw new Error('dragcolumnsItem key is required. add dragcolumns-item="item.key"');
             }
 
             var dragCtrl = ctrls[0];
-            dragCtrl.addDragColumn(scope.key, el);
+            dragCtrl.addDragColumn(key, el, scope.item);
 
             scope.$on('$destroy', function () {
-                dragCtrl.removeDragColumn(scope.key);
+                dragCtrl.removeDragColumn(key);
             });
 
             var documentEl = angular.element(document);
@@ -321,7 +330,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
             el.bind($$events.start, function (e) {
 
                 e.preventDefault();
-                dragCtrl.startDragging(scope.key, e.touches ? e.touches[0]: e);
+                dragCtrl.startDragging(key, e.touches ? e.touches[0]: e);
 
                 dragCtrl.move(e.touches ? e.touches[0]: e);
 

@@ -4,35 +4,38 @@ angular.module('app', [
     'dragcolumns'
 ]);
 
-angular.module('app').controller('AppController', function ($scope) {
+angular.module('app').controller('AppController', function ($scope, $http) {
 
+    $http.get('https://dashboard.hawaii.gov/resource/iytq-na8a.json').then(function (resp) {
+        $scope.table.data = resp.data;
+    });
     $scope.table = {
         headers: [
-            'name',
-            'age',
-            'income',
-            'city'
+            "attorney_training",
+            "car_mileage",
+            "date",
+            "dues_subscriptions",
+            "educational_supplies",
+            "electricity",
+            "equipment",
+            "freight_delivery_charges",
+            "hire_of_passenger_cars",
+            "miscellaneous_current_expenses",
+            "office_supplies",
+            "other_curr_exp",
+            "other_services_on_fee_basis",
+            "other_utilities",
+            "payroll",
+            "postage",
+            "r_m_machinery_equip",
+            "rental_of_equipment",
+            "rental_of_land_building",
+            "subsistnce_allowance_intrastate",
+            "telephone_telegraph_1",
+            "totals",
+            "transportation_intrastate"
         ],
-        data: [
-            {
-                name: 'John',
-                age: 20,
-                income: 20000,
-                city: 'NYC'
-            },
-            {
-                name: 'Jessika',
-                age: 21,
-                income: 15000,
-                city: 'Florida'
-            },
-            {
-                name: 'Steve',
-                age: '20',
-                income: 12000,
-                city: 'LA'
-            }
-        ]
+        data: []
     };
     $scope.onReorder = function (curIdx, newIdx) {
         //console.log('swap', curIdx, newIdx);

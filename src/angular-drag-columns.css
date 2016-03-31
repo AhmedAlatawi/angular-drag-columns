@@ -7,10 +7,16 @@
   position: absolute;
   background-color: white;
   box-shadow: 0 1px 3px rgba(204, 204, 204, 0.3);
-  transform: translate3d(0, 0, 0); }
+  transform: translate3d(0, 0, 0);
+  cursor: move; }
 
 .dragcolumns-cell {
   opacity: 0.2;
   background-color: #f1f1f1; }
+
+[dragcolumns-item] {
+  cursor: pointer; }
+  .dragcolumns-table [dragcolumns-item] {
+    cursor: move; }
 
 /*# sourceMappingURL=angular-drag-columns.css.map */

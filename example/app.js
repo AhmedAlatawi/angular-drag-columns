@@ -37,6 +37,10 @@ angular.module('app').controller('AppController', function ($scope, $http) {
         ],
         data: []
     };
+
+    $scope.onClick = function (header) {
+        alert('click on header, ' + header.key);
+    }
     $scope.onReorder = function (curIdx, newIdx) {
         //console.log('swap', curIdx, newIdx);
     }

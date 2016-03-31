@@ -25,7 +25,6 @@
     "tests"
   ],
   "dependencies": {
-    "longpress.js": "https://github.com/vaidik/longpress.js.git",
     "angular": "^1.5.3"
   }
 }

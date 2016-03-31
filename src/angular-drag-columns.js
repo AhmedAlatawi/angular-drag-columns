@@ -328,8 +328,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                 dragCtrl.move(e.touches ? e.touches[0]: e);
             };
 
-            el.bind($$events.start, function (e) {
-
+            function onStartDrag (e) {
                 e.preventDefault();
                 dragCtrl.startDragging(key, e.touches ? e.touches[0]: e);
 
@@ -342,7 +341,15 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                     documentEl.unbind($$events.end);
                     documentEl.unbind($$events.move, handleMouseMove);
                 });
-
+            }
+            var HOLD_DURATION = 500,
+                timeoutId = null;
+            el.bind($$events.start, function (e) {
+                timeoutId = setTimeout(function () {
+                    onStartDrag(e);
+                }, HOLD_DURATION);
+            }).bind($$events.end, function (e) {
+                clearTimeout(timeoutId);
             });
 
         }

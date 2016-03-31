@@ -27,7 +27,7 @@
     <thead>
     <tr>
         <th>Index</th>
-        <th dragcolumns-item="header" dragcolumns-item-key="header.key" ng-repeat="header in headers = (table.headers | filter: filter.header)">{{header.key}}</th>
+        <th ng-click="onClick(header)" dragcolumns-item="header" dragcolumns-item-key="header.key" ng-repeat="header in headers = (table.headers | filter: filter.header)">{{header.key}}</th>
     </tr>
     </thead>
     <tbody>

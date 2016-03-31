@@ -224,6 +224,8 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                     display: 'none'
                 });
 
+                $scope.$emit('dragcolumnsStopDragging');
+
                 $$drag.key = null;
             };
 

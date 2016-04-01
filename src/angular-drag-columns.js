@@ -42,7 +42,7 @@ function getCoords(elem) {
         left: left
     };
 }
-function calcOverlap (blockA, blockB) {
+function calcOverlap(blockA, blockB) {
     var minWidth = Math.min(blockA.width, blockB.width);
 
     var leftBlock = blockA.left < blockB.left ? blockA : blockB;
@@ -54,7 +54,7 @@ function calcOverlap (blockA, blockB) {
     return (minCommonRight - maxCommonLeft) / minWidth;
 }
 
-function calcDropKoef (dropPlace, handler) {
+function calcDropKoef(dropPlace, handler) {
 
     var dropPlaceBlock = {
         left: dropPlace.left,
@@ -83,7 +83,7 @@ function calcDropKoef (dropPlace, handler) {
             dropPlaceBlock.left = dropPlaceBlock.right - dropPlaceBlock.width;
         }
     }
-    return calcOverlap (dropPlaceBlock, handler);
+    return calcOverlap(dropPlaceBlock, handler);
 }
 
 angular.module('dragcolumns', []).directive('dragcolumns', function () {
@@ -325,14 +325,32 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
             var handleMouseMove = function (e) {
                 if (!dragCtrl.isDragging()) return;
                 e.preventDefault();
-                dragCtrl.move(e.touches ? e.touches[0]: e);
+                dragCtrl.move(e.touches ? e.touches[0] : e);
             };
 
-            function onStartDrag (e) {
-                e.preventDefault();
-                dragCtrl.startDragging(key, e.touches ? e.touches[0]: e);
+            function clearSelection() {
+                if (window.getSelection) {
+                    if (window.getSelection().empty) {  // Chrome
+                        window.getSelection().empty();
+                    } else if (window.getSelection().removeAllRanges) {  // Firefox
+                        window.getSelection().removeAllRanges();
+                    }
+                } else if (document.selection) {  // IE?
+                    document.selection.empty();
+                }
+            }
 
-                dragCtrl.move(e.touches ? e.touches[0]: e);
+            function onStartDrag(e) {
+                e.cancelBubble = true;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                clearSelection();
+
+                dragCtrl.startDragging(key, e.touches ? e.touches[0] : e);
+
+                dragCtrl.move(e.touches ? e.touches[0] : e);
 
                 documentEl.bind($$events.move, handleMouseMove);
                 documentEl.bind($$events.end, function (e) {
@@ -342,6 +360,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                     documentEl.unbind($$events.move, handleMouseMove);
                 });
             }
+
             var HOLD_DURATION = 500,
                 timeoutId = null;
             el.bind($$events.start, function (e) {

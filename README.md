@@ -60,3 +60,4 @@ See example in `example` folder
 ## TODO
 
 - multitouch
+- auto scroll if draggin is around edge and scroll is available

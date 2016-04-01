@@ -334,9 +334,17 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                         window.getSelection().empty();
                     } else if (window.getSelection().removeAllRanges) {  // Firefox
                         window.getSelection().removeAllRanges();
+                    } else if (window.getSelection().collapseToStart) {
+                        window.getSelection().collapseToStart();
                     }
                 } else if (document.selection) {  // IE?
-                    document.selection.empty();
+                    if (document.selection.empty) {
+                        document.selection.empty();
+                    } else if (document.selection.createRange) {
+                        var range = document.selection.createRange();
+                        range.expand("word");
+                        range.execCommand("unselect");
+                    }
                 }
             }
 
@@ -352,10 +360,14 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
 
                 dragCtrl.move(e.touches ? e.touches[0] : e);
 
+                clearSelection();
+
                 documentEl.bind($$events.move, handleMouseMove);
                 documentEl.bind($$events.end, function (e) {
 
                     dragCtrl.stopDragging();
+                    clearSelection();
+
                     documentEl.unbind($$events.end);
                     documentEl.unbind($$events.move, handleMouseMove);
                 });

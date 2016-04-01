@@ -206,8 +206,9 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                 var coords = getCoords($this[0]);
 
                 $$drag.key = key;
-                $$drag.shiftX = e.pageX - coords.left;
-                $$drag.shiftY = e.pageY - coords.top;
+                var pointer = pointerEventToXY(e);
+                $$drag.shiftX = pointer.x - coords.left;
+                $$drag.shiftY = pointer.y - coords.top;
                 $$drag.cells = angular.element(columnCells).addClass('dragcolumns-cell');
 
                 $$elements.table.css({
@@ -229,11 +230,26 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
                 $$drag.key = null;
             };
 
+            var pointerEventToXY = function (e) {
+                var out = {x: 0, y: 0};
+                if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
+                    var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+                    out.x = touch.pageX;
+                    out.y = touch.pageY;
+                } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
+                    out.x = e.pageX;
+                    out.y = e.pageY;
+                }
+                return out;
+            };
+
+
             this.move = function (e) {
+                var pointer = pointerEventToXY(e);
 
                 $$elements.table.css({
-                    top: e.pageY - $$drag.shiftY + 'px',
-                    left: e.pageX - $$drag.shiftX + 'px'
+                    top: (pointer.y - $$drag.shiftY),
+                    left: (pointer.x - $$drag.shiftX)
                 });
 
                 var tableBox = $$elements.table[0].getBoundingClientRect();
@@ -325,7 +341,7 @@ angular.module('dragcolumns', []).directive('dragcolumns', function () {
             var handleMouseMove = function (e) {
                 if (!dragCtrl.isDragging()) return;
                 e.preventDefault();
-                dragCtrl.move(e.touches ? e.touches[0] : e);
+                dragCtrl.move(e);
             };
 
             function clearSelection() {
